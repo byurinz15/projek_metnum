@@ -102,7 +102,7 @@ export function runBisection(
   let finalStatus: 'converged' | 'max_reached' | 'error' = 'max_reached';
   let message = '';
 
-  for (let r = 1; r <= maxIters; r++) {
+  for (let r = 0; r < maxIters; r++) {
     const c = (currentA + currentB) / 2;
     
     let evaluatedFA: number;
@@ -117,15 +117,15 @@ export function runBisection(
       return {
         root: null,
         valF: null,
-        iterations: r - 1,
+        iterations: r,
         status: 'error',
-        message: `Error evaluasi di iterasi ke-${r}: ${err instanceof Error ? err.message : String(err)}`,
+        message: `Error evaluasi di iterasi r = ${r}: ${err instanceof Error ? err.message : String(err)}`,
         results
       };
     }
 
-    // Hitung lebar interval sebelum update
-    const widthBefore = currentB - currentA;
+    // Hitung lebar interval setelah bisection (setengah dari interval sebelumnya)
+    const newWidth = (currentB - currentA) / 2;
 
     // Hitung error relatif e_a = |c_baru - c_lama| / |c_baru|
     let relativeError: number | null = null;
@@ -149,7 +149,7 @@ export function runBisection(
       fb: evaluatedFB,
       fc: evaluatedFC,
       newInterval: newIntervalLabel,
-      width: widthBefore,
+      width: newWidth,
       relativeError
     });
 
@@ -197,3 +197,43 @@ export function runBisection(
     results
   };
 }
+
+/**
+ * Format numerical results with custom rules:
+ * - Maximum of 8 decimal places.
+ * - If the number is too long (specifically when its absolute value is < 1e-4), 
+ *   use scientific notation 'e' (e.g., 9.3283e-11) and strip trailing zeros.
+ */
+export function formatNumeric(val: number | null | undefined, forExcel: boolean = false): string {
+  if (val === null || val === undefined || isNaN(val)) {
+    return forExcel ? '' : '-';
+  }
+  if (val === 0) return '0';
+  
+  const absVal = Math.abs(val);
+  
+  if (absVal < 1e-4) {
+    let expStr = val.toExponential(8);
+    const parts = expStr.split('e');
+    let mantissa = parts[0];
+    const exponent = parts[1];
+    
+    if (mantissa.includes('.')) {
+      mantissa = mantissa.replace(/0+$/, '');
+      if (mantissa.endsWith('.')) {
+        mantissa = mantissa.slice(0, -1);
+      }
+    }
+    return `${mantissa}e${exponent}`;
+  }
+  
+  let fixedStr = val.toFixed(8);
+  if (fixedStr.includes('.')) {
+    fixedStr = fixedStr.replace(/0+$/, '');
+    if (fixedStr.endsWith('.')) {
+      fixedStr = fixedStr.slice(0, -1);
+    }
+  }
+  return fixedStr;
+}
+

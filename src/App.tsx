@@ -1,8 +1,8 @@
 import { useState, useRef } from 'react';
 import { motion } from 'motion/react';
 import { Play, HelpCircle, FileDown, Info, RotateCcw, FunctionSquare, X, AlertTriangle } from 'lucide-react';
-import { runBisection, evaluateF } from './utils/bisection';
-import { CalculationOutcome, IterationResult } from './types';
+import { runBisection, evaluateF, formatNumeric } from './utils/bisection';
+import { CalculationOutcome } from './types';
 import FunctionChart from './components/FunctionChart';
 
 export default function App() {
@@ -211,31 +211,38 @@ export default function App() {
   // Export CSV
   const handleExportCSV = () => {
     if (outcome.results.length === 0) return;
-    const headers = ['r', 'a', 'b', 'c', 'f(a)', 'f(b)', 'f(c)', 'Interval Baru', 'Lebar_Interval', 'Error_Relatif'];
-    const rows = outcome.results.map((row: IterationResult) => [
+    
+    // Headers matching reference image
+    const headers = ['r', 'a', 'b', 'c', 'f(a)', 'f(b)', 'f(c)', 'Kalang baru', 'Lebar kalang', 'Error relatif'];
+    
+    const rows = outcome.results.map(row => [
       row.r,
-      row.a,
-      row.b,
-      row.c,
-      row.fa,
-      row.fb,
-      row.fc,
-      row.newInterval,
-      row.width,
-      row.relativeError !== null ? row.relativeError : '-'
+      formatNumeric(row.a, true),
+      formatNumeric(row.b, true),
+      formatNumeric(row.c, true),
+      formatNumeric(row.fa, true),
+      formatNumeric(row.fb, true),
+      formatNumeric(row.fc, true),
+      // Wrap the interval label in quotes because it contains commas (e.g. "(c,b)" or "(a,c)")
+      `"${row.newInterval}"`,
+      formatNumeric(row.width, true),
+      formatNumeric(row.relativeError, true)
     ]);
     
-    // Add columns with CSV headers joined by commas
-    const csvContent = "data:text/csv;charset=utf-8," 
-      + [headers.join(','), ...rows.map((e: (string | number)[]) => e.join(','))].join('\n');
-      
-    const encodedUri = encodeURI(csvContent);
+    // Using sep=, as the first line to guarantee that Microsoft Excel loads the file correctly with columns in all regions
+    // Add UTF-8 BOM \ufeff at the start for proper character encoding support
+    const csvContent = "sep=,\n" + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+    
+    const blob = new Blob(["\ufeff" + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    
     const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
+    link.setAttribute("href", url);
     link.setAttribute("download", `bisection_hasil_${formula.replace(/[^a-zA-Z0-9]/g, "_")}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   // Safe variables for current bounds
@@ -251,7 +258,7 @@ export default function App() {
             <span className="material-symbols-outlined text-2xl font-bold" style={{ fontVariationSettings: "'FILL' 1" }}>function</span>
           </div>
           <div>
-            <span className="font-sans text-lg font-bold text-white leading-snug tracking-tight">Numerics Pro</span>
+            <span className="font-sans text-lg font-bold text-white leading-snug tracking-tight">Bisectify</span>
             <span className="hidden sm:inline-block ml-2 text-[11px] font-mono tracking-wider text-cyan-400 bg-cyan-950/50 border border-cyan-500/10 px-2 py-0.5 rounded-full uppercase font-bold">Bisection Engine</span>
           </div>
         </div>
@@ -260,25 +267,17 @@ export default function App() {
           <button 
             onClick={handleReset}
             title="Reset Kalkulator"
-            className="text-slate-400 hover:text-cyan-400 hover:bg-white/5 transition-colors p-2 rounded-full duration-150 active:scale-95 flex items-center justify-center"
+            className="text-slate-400 hover:text-red-500 hover:bg-red-500/10 transition-all px-3 py-1.5 rounded-lg duration-150 active:scale-95 flex items-center gap-2 border border-transparent hover:border-red-500/20 text-sm font-medium"
           >
-            <RotateCcw className="w-5 h-5" />
+            <RotateCcw className="w-4 h-4" />
+            <span>Reset</span>
           </button>
-          
-          <div className="ml-2 w-8 h-8 rounded-full bg-cyan-950 text-white flex items-center justify-center font-semibold overflow-hidden ring-2 ring-cyan-500/20 border border-white/15 shadow-sm">
-            <img 
-              alt="User" 
-              className="w-full h-full object-cover" 
-              referrerPolicy="no-referrer"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuAoN14Uuvc9DF2ytgD6Xpv9iuaPUBUvf0cqezdzqj0raXhhH7CSzti_08fJJnD_4jRgUDbe8a1LnOweAoUblFbN0T-Imhggcst_mrO9S3uuyfHg8EFhAg3uGlNwWhAixUb1McDt--DAK0awDDQP8PTQrHp5wJHJR_6SAYt2yxSQksN2RQFvaLxJj6XDw4kenI5SdZC53uoMiKWW6twhHu0CsC6wd9lgcrXydVpObzjcH2pK7CGN0hOHBBZkO0mjvcaFSxfRTJoUqxA8" 
-            />
-          </div>
         </div>
       </nav>
 
       {/* Main Workspace Frame */}
       <main className="flex-1 w-full pt-20 pb-16 min-h-screen">
-        <div className="max-w-360 mx-auto px-4 md:px-8 flex flex-col gap-6">
+        <div className="max-w-[1440px] mx-auto px-4 md:px-8 flex flex-col gap-6">
           
           {/* Scientific Header banner */}
           <header className="border-b border-white/10 pb-5">
@@ -403,7 +402,7 @@ export default function App() {
                   {/* Static Validation status check */}
                   <div className="mt-1 p-3 bg-cyan-500/5 border border-cyan-500/10 rounded-xl">
                     <p className="font-sans text-[11px] text-slate-400 flex items-start gap-2 leading-relaxed">
-                      <span className="material-symbols-outlined text-[15px] text-cyan-400 mt-0.5 font-bold">info</span>
+                      <span className="material-symbols-outlined text-[15px] text-cyan-400 mt-[2px] font-bold">info</span>
                       Metode Bisection mengharuskan f(a) dan f(b) memiliki nilai tanda berlawanan agar akar kontinu berada di tengahnya.
                     </p>
                   </div>
@@ -439,7 +438,7 @@ export default function App() {
                   </div>
                   <h3 className="font-sans text-[10px] uppercase font-bold text-slate-500 tracking-wider">ESTIMASI AKAR (c)</h3>
                   <p className="font-mono text-2xl font-bold text-cyan-400 mt-1 tracking-tight">
-                    {outcome.root !== null ? outcome.root.toFixed(6) : 'N/A'}
+                    {outcome.root !== null ? formatNumeric(outcome.root) : 'N/A'}
                   </p>
                   <span className="text-[10px] text-slate-500 font-sans mt-1 block">Titik tengah c terakhir</span>
                 </div>
@@ -448,7 +447,7 @@ export default function App() {
                 <div className="glass-panel p-5 relative overflow-hidden group shadow-lg">
                   <h3 className="font-sans text-[10px] uppercase font-bold text-slate-500 tracking-wider">RESIDU f(c)</h3>
                   <p className="font-mono text-2xl font-bold text-emerald-400 mt-1 tracking-tight">
-                    {outcome.valF !== null ? outcome.valF.toExponential(4) : 'N/A'}
+                    {outcome.valF !== null ? formatNumeric(outcome.valF) : 'N/A'}
                   </p>
                   <span className="text-[10px] text-slate-500 font-sans mt-1 block">Makin dekat ke 0 = makin presisi</span>
                 </div>
@@ -591,8 +590,8 @@ export default function App() {
               )}
             </div>
 
-            <div className="overflow-x-auto table-scroll max-h-120">
-              <table className="w-full text-left border-collapse whitespace-nowrap min-w-275">
+            <div className="overflow-x-auto table-scroll max-h-[480px]">
+              <table className="w-full text-left border-collapse whitespace-nowrap min-w-[1100px]">
                 <thead className="sticky top-0 z-20 shadow-[0_1.5px_0_rgba(255,255,255,0.1)] bg-[#0b0f19]">
                   <tr className="font-sans text-[11px] font-bold text-slate-400 bg-slate-900/80">
                     <th className="px-5 py-3.5 border-r border-white/10 text-center w-14">r</th>
@@ -610,9 +609,11 @@ export default function App() {
                 <tbody className="font-mono text-[12.5px] text-slate-300">
                   {outcome.results.length === 0 ? (
                     <tr>
-                      <td colSpan={10} className="text-center py-12 text-slate-400 font-sans text-sm bg-transparent">
-                        <span className="material-symbols-outlined text-3xl text-slate-500 block mb-1">help_outline</span>
-                        Belum ada komputasi. Silakan masukkan parameter di atas lalu klik tombol "Mulai Komputasi".
+                      <td colSpan={10} className="py-12 text-slate-400 font-sans text-sm bg-transparent">
+                        <div className="flex items-center justify-center gap-2">
+                          <HelpCircle className="w-5 h-5 text-slate-500 shrink-0" />
+                          <span>Belum ada komputasi. Silakan masukkan parameter di atas lalu klik tombol "Mulai Komputasi".</span>
+                        </div>
                       </td>
                     </tr>
                   ) : (
@@ -628,7 +629,7 @@ export default function App() {
                               ? 'bg-cyan-500/25 hover:bg-cyan-500/30 font-bold border-y border-cyan-500/35 border-l-4 border-l-cyan-500 shadow-[inset_0_-1px_0_rgba(6,182,212,0.3)] text-white' 
                               : idx % 2 === 0 
                                 ? 'bg-transparent' 
-                                : 'bg-white/1'
+                                : 'bg-white/[0.01]'
                           }`}
                         >
                           {/* r - Iteration counter */}
@@ -637,37 +638,36 @@ export default function App() {
                           }`}>
                             {item.r}
                           </td>
-                          
-                          {/* a */}
+                                                 {/* a */}
                           <td className="px-5 py-2.5 text-right">
-                            {item.a.toFixed(8)}
+                            {formatNumeric(item.a)}
                           </td>
                           
                           {/* b */}
                           <td className="px-5 py-2.5 text-right">
-                            {item.b.toFixed(8)}
+                            {formatNumeric(item.b)}
                           </td>
                           
                           {/* c */}
                           <td className={`px-5 py-2.5 text-right font-bold bg-[#0f172a]/20 ${isLastRow ? 'text-cyan-400 text-sm' : 'text-cyan-300'}`}>
-                            {item.c.toFixed(8)}
+                            {formatNumeric(item.c)}
                           </td>
                           
                           {/* f(a) */}
                           <td className="px-5 py-2.5 text-right border-l border-white/10 text-slate-400">
-                            {item.fa.toFixed(8)}
+                            {formatNumeric(item.fa)}
                           </td>
                           
                           {/* f(b) */}
                           <td className="px-5 py-2.5 text-right text-slate-400">
-                            {item.fb.toFixed(8)}
+                            {formatNumeric(item.fb)}
                           </td>
                           
                           {/* f(c) */}
                           <td className={`px-5 py-2.5 text-right font-medium ${
                             Math.abs(item.fc) < 1e-6 ? 'text-cyan-400 font-bold' : 'text-slate-300'
                           }`}>
-                            {item.fc.toFixed(8)}
+                            {formatNumeric(item.fc)}
                           </td>
                           
                           {/* Kalang baru */}
@@ -683,7 +683,7 @@ export default function App() {
                           
                           {/* Width */}
                           <td className="px-5 py-2.5 text-right text-slate-400">
-                            {item.width.toFixed(8)}
+                            {formatNumeric(item.width)}
                           </td>
                           
                           {/* Relative Error */}
@@ -692,7 +692,7 @@ export default function App() {
                               ? 'text-cyan-400' 
                               : 'text-amber-400'
                           }`}>
-                            {hasRelativeError ? item.relativeError!.toFixed(8) : '-'}
+                            {formatNumeric(item.relativeError)}
                           </td>
                         </tr>
                       );
@@ -732,7 +732,7 @@ export default function App() {
 
       {/* Beautiful scientific footer */}
       <footer className="w-full bg-slate-950/40 border-t border-white/10 py-6 mt-12 text-center text-xs text-slate-500 font-sans">
-        <div className="max-w-360 mx-auto px-6">
+        <div className="max-w-[1440px] mx-auto px-6">
           <p>© 2026 Kelompok 8 Metode Numerik. ITPLN.</p>
         </div>
       </footer>
@@ -756,7 +756,7 @@ export default function App() {
             className="relative w-full max-w-lg bg-[#0e1424] border border-rose-500/30 rounded-2xl shadow-2xl shadow-rose-950/20 overflow-hidden"
           >
             {/* Red/Rose header accent */}
-            <div className="bg-linear-to-r from-rose-950/60 to-slate-900 px-6 py-4.5 border-b border-rose-500/20 flex justify-between items-center">
+            <div className="bg-gradient-to-r from-rose-950/60 to-slate-900 px-6 py-4.5 border-b border-rose-500/20 flex justify-between items-center">
               <div className="flex items-center gap-2.5 text-rose-450">
                 <AlertTriangle className="w-5 h-5 text-rose-500 shrink-0" />
                 <h3 className="font-sans text-sm font-bold text-rose-200 tracking-wide">Peringatan Validasi</h3>

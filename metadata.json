@@ -1,5 +1,5 @@
 {
-  "name": "Kalkulator Metode Bisection",
+  "name": "Bisectify",
   "description": "Kalkulator iteratif untuk mencari akar persamaan non-linear menggunakan Metode Bisection, dilengkapi dengan tabel iterasi dan visualisasi grafik.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
