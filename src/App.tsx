@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Play, HelpCircle, FileDown, Info, RotateCcw, FunctionSquare, X, AlertTriangle } from 'lucide-react';
 import { runBisection, evaluateF, formatNumeric } from './utils/bisection';
@@ -6,6 +6,10 @@ import { CalculationOutcome } from './types';
 import FunctionChart from './components/FunctionChart';
 
 export default function App() {
+  useEffect(() => {
+    document.title = 'Bisectify - Kalkulator Metode Bisection';
+  }, []);
+
   // DOM References for scrolling
   const chartSectionRef = useRef<HTMLDivElement>(null);
   const tableSectionRef = useRef<HTMLElement>(null);
