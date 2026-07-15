@@ -267,22 +267,7 @@ export default function App() {
           title="Scroll ke Atas"
         >
           <div className="shrink-0 flex items-center">
-            <img 
-              src="/logo.png" 
-              alt="Bisectify Logo" 
-              className="w-8 h-8 rounded-lg shadow-md border border-white/5 object-cover"
-              referrerPolicy="no-referrer"
-              onError={(e) => {
-                e.currentTarget.style.display = 'none';
-                const fallback = e.currentTarget.nextElementSibling as HTMLElement;
-                if (fallback) {
-                  fallback.style.display = 'flex';
-                }
-              }}
-            />
-            <div className="w-8 h-8 rounded-lg shadow-md border border-cyan-500/30 bg-cyan-950/40 text-cyan-400 flex items-center justify-center font-sans font-bold text-lg leading-none" style={{ display: 'none' }}>
-              B
-            </div>
+            <img src="/logo.png" alt="Logo Bisectify" className="w-8 h-8 rounded-lg shadow-md border border-white/5 object-cover" />
           </div>
           <div>
             <span className="font-sans text-lg font-bold text-white leading-snug tracking-tight">Bisectify</span>

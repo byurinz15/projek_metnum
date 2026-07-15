@@ -1,14 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
-  <defs>
-    <linearGradient id="blue-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#00e5ff" />
-      <stop offset="100%" stop-color="#0066ff" />
-    </linearGradient>
-    <mask id="cut-mask">
-      <rect width="512" height="512" fill="white" />
-      <rect x="-50" y="226" width="612" height="20" fill="black" transform="rotate(30 256 256)" />
-    </mask>
-  </defs>
-  <rect width="512" height="512" rx="140" fill="#061524"/>
-  <path d="M 168,130 H 278 C 333,130 333,238 278,238 C 343,238 343,382 278,382 H 168 Z M 228,166 H 263 C 286,166 286,202 263,202 H 228 Z M 228,272 H 263 C 290,272 290,348 263,348 H 228 Z" fill="url(#blue-grad)" mask="url(#cut-mask)" fill-rule="evenodd" />
-</svg>
+<img 
+  src="/logo.png" 
+  alt="Logo Bisectify" 
+  className="w-8 h-8 rounded-lg shadow-md border border-white/5 object-cover"
+/>
