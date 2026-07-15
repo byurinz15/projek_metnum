@@ -10,6 +10,10 @@ export default function App() {
     document.title = 'Bisectify - Kalkulator Metode Bisection';
   }, []);
 
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   // DOM References for scrolling
   const chartSectionRef = useRef<HTMLDivElement>(null);
   const tableSectionRef = useRef<HTMLElement>(null);
@@ -257,15 +261,34 @@ export default function App() {
     <div className="min-h-screen bg-[#0b0f19] text-slate-200 flex flex-col antialiased">
       {/* Navbar */}
       <nav id="top-navigation" className="fixed top-0 w-full z-50 flex justify-between items-center px-6 md:px-10 h-16 bg-[#0f172a]/85 backdrop-blur-md border-b border-white/10 shadow-lg">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-cyan-500/10 text-cyan-400 rounded-lg">
-            <span className="material-symbols-outlined text-2xl font-bold" style={{ fontVariationSettings: "'FILL' 1" }}>function</span>
+        <button 
+          onClick={scrollToTop}
+          className="flex items-center gap-3 text-left focus:outline-none focus:ring-2 focus:ring-cyan-500/30 rounded-lg p-1 -m-1 transition-all hover:opacity-90 active:scale-[0.98]"
+          title="Scroll ke Atas"
+        >
+          <div className="shrink-0 flex items-center">
+            <img 
+              src="/logo.png" 
+              alt="Bisectify Logo" 
+              className="w-8 h-8 rounded-lg shadow-md border border-white/5 object-cover"
+              referrerPolicy="no-referrer"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+                const fallback = e.currentTarget.nextElementSibling as HTMLElement;
+                if (fallback) {
+                  fallback.style.display = 'flex';
+                }
+              }}
+            />
+            <div className="w-8 h-8 rounded-lg shadow-md border border-cyan-500/30 bg-cyan-950/40 text-cyan-400 flex items-center justify-center font-sans font-bold text-lg leading-none" style={{ display: 'none' }}>
+              B
+            </div>
           </div>
           <div>
             <span className="font-sans text-lg font-bold text-white leading-snug tracking-tight">Bisectify</span>
             <span className="hidden sm:inline-block ml-2 text-[11px] font-mono tracking-wider text-cyan-400 bg-cyan-950/50 border border-cyan-500/10 px-2 py-0.5 rounded-full uppercase font-bold">Bisection Engine</span>
           </div>
-        </div>
+        </button>
         
         <div className="flex items-center gap-2">
           <button 
