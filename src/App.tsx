@@ -280,9 +280,6 @@ export default function App() {
                 }
               }}
             />
-            <div className="w-8 h-8 rounded-lg shadow-md border border-cyan-500/30 bg-cyan-950/40 text-cyan-400 flex items-center justify-center font-sans font-bold text-lg leading-none" style={{ display: 'none' }}>
-              B
-            </div>
           </div>
           <div>
             <span className="font-sans text-lg font-bold text-white leading-snug tracking-tight">Bisectify</span>
